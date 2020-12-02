@@ -33,36 +33,28 @@ class ObscuredPrefs {
   //   return _prefs.containsKey(key);
   // }
 
-  dynamic get(String key) {
-    return _prefs.get(key);
-  }
+  dynamic get(String key) => _prefs.get(key);
 
   bool getBool(String key) {
-    final value = _prefs.getString(key);
-    if (value == null) return null;
-    return _encrypter.decrypt16(value, iv: _iv).contains("true");
+    final value = getString(key);
+    return value is String ? value.contains("true") : null;
   }
 
   double getDouble(String key) {
-    final value = _prefs.getString(key);
-    if (value == null) return null;
-    return double.tryParse(_encrypter.decrypt16(value, iv: _iv));
+    final value = getString(key);
+    return value is String ? double.tryParse(value) : null;
   }
 
   int getInt(String key) {
-    final value = _prefs.getString(key);
-    if (value == null) return null;
-    return int.tryParse(_encrypter.decrypt16(value, iv: _iv));
+    final value = getString(key);
+    return value is String ? int.tryParse(value) : null;
   }
 
-  Set<String> getKeys() {
-    return _prefs.getKeys();
-  }
+  Set<String> getKeys() => _prefs.getKeys();
 
   String getString(String key) {
     final value = _prefs.getString(key);
-    if (value == null) return null;
-    return _encrypter.decrypt16(value, iv: _iv);
+    return value is String ? _encrypter.decrypt16(value, iv: _iv) : null;
   }
 
   List<String> getStringList(String key) {
@@ -75,53 +67,27 @@ class ObscuredPrefs {
     return _decryptedList;
   }
 
-  Future<bool> remove(String key) async {
-    return _prefs.remove(key);
-  }
+  Future<bool> remove(String key) => _prefs.remove(key);
 
-  Future<bool> setBool(String key, bool value) async {
-    if (value == null) {
-      remove(key);
-      return null;
-    }
-    final encryptedValue = _encrypter.encrypt(value.toString(), iv: _iv).base16;
-    return _prefs.setString(key, encryptedValue);
-  }
+  Future<bool> setBool(String key, bool value) => setString(key, value?.toString());
 
-  Future<bool> setDouble(String key, double value) async {
-    if (value == null) {
-      remove(key);
-      return null;
-    }
-    final encryptedValue = _encrypter.encrypt(value.toString(), iv: _iv).base16;
-    return _prefs.setString(key, encryptedValue);
-  }
+  Future<bool> setDouble(String key, double value) => setString(key, value?.toString());
 
-  Future<bool> setInt(String key, int value) async {
-    if (value == null) {
-      remove(key);
-      return null;
-    }
-    final encryptedValue = _encrypter.encrypt(value.toString(), iv: _iv).base16;
-    return _prefs.setString(key, encryptedValue);
-  }
+  Future<bool> setInt(String key, int value) => setString(key, value?.toString());
 
   Future<bool> setString(String key, String value) async {
-    if (value == null) {
-      remove(key);
-      return null;
-    }
-    final encryptedValue = _encrypter.encrypt(value, iv: _iv).base16;
+    final encryptedValue =
+      value is String
+        ? _encrypter.encrypt(value, iv: _iv).base16
+        : null;
     return _prefs.setString(key, encryptedValue);
   }
 
   Future<bool> setStringList(String key, List<String> value) async {
-    if (value == null) {
-      remove(key);
-      return null;
-    }
     final List<String> encryptedValues =
-        value.map((v) => _encrypter.encrypt(v, iv: _iv).base16).toList();
+      value is List<String>
+        ? value.map((v) => _encrypter.encrypt(v, iv: _iv).base16).toList()
+        : null;
     return _prefs.setStringList(key, encryptedValues);
   }
 }
